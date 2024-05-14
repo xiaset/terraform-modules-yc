@@ -1,13 +1,6 @@
-variable "env" {
-  description = "The name of the environment"
+variable "name" {
+  description = "The name of the instance"
   type        = string
-  default     = "env"
-}
-
-variable "project" {
-  description = "The name of the project"
-  type        = string
-  default     = "project"
 }
 
 variable "folder_id" {
@@ -18,6 +11,7 @@ variable "folder_id" {
 variable "hostname" {
   description = "Host name for the instance. This field is used to generate the instance fqdn value. The host name must be unique within the network and region. If not specified, the host name will be equal to id of the instance and fqdn will be <id>.auto.internal. Otherwise FQDN will be <hostname>.<region_id>.internal"
   type        = string
+  default = null
 }
 
 variable "description" {
@@ -31,12 +25,12 @@ variable "labels" {
   default     = { managed-by = "terraform" }
 }
 
-variable "ssh_admin_username" {
+variable "ssh_username" {
   description = "SSH username for access to instance"
   type        = string
 }
 
-variable "ssh_admin_pub_key" {
+variable "ssh_pub_key" {
   description = "SSH public key for access to instance"
   type        = string
 }
@@ -103,13 +97,13 @@ variable "core_fraction" {
   default     = 5
 }
 
-variable "external_ip" {
+variable "create_external_ip" {
   description = "To create external ip or not"
   type        = bool
   default     = false
 }
 
-variable "static_external_ip" {
+variable "create_static_external_ip" {
   description = "To create static external ip or not"
   type        = bool
   default     = false
@@ -149,4 +143,9 @@ variable "security_group_ids" {
   description = "Security group ids for network interface"
   type        = list(any)
   default     = []
+}
+
+variable "user_data" {
+   description = "The user-data cloud config for the instance"
+   type        = string
 }

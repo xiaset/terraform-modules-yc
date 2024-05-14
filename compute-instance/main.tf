@@ -31,8 +31,8 @@ resource "yandex_compute_instance" "this" {
 
   network_interface {
     subnet_id          = var.subnet_id
-    nat                = var.external_ip
-    nat_ip_address     = var.static_external_ip ? yandex_vpc_address.this["external_ip"].external_ipv4_address[0].address : ""
+    nat                = var.create_external_ip
+    nat_ip_address     = var.create_static_external_ip ? yandex_vpc_address.this[0].external_ipv4_address[0].address : ""
     security_group_ids = var.security_group_ids
   }
 
@@ -44,7 +44,8 @@ resource "yandex_compute_instance" "this" {
 
   metadata = {
     foo      = "bar"
-    ssh-keys = "${var.ssh_admin_username}:${var.ssh_admin_pub_key}"
+    ssh-keys = "${var.ssh_username}:${var.ssh_pub_key}"
+    user-data = length(var.user_data) > 0 ? var.user_data : null
   }
 
   labels = merge({
@@ -56,6 +57,7 @@ resource "yandex_compute_instance" "this" {
 
 resource "yandex_compute_disk" "this" {
   for_each = var.create_secondary_disk ? { secondary_disk = "" } : {}
+  #count = var.create_secondary_disk ? 1 : 0
 
   size = var.secondary_disk_size
   type = var.secondary_disk_type
@@ -64,7 +66,8 @@ resource "yandex_compute_disk" "this" {
 }
 
 resource "yandex_vpc_address" "this" {
-  for_each = var.static_external_ip ? { external_ip = "" } : {}
+  #for_each = var.static_external_ip ? {ip = ""} : {}
+  count = var.create_static_external_ip ? 1 : 0
   name     = var.name
 
   external_ipv4_address {
@@ -78,7 +81,7 @@ resource "yandex_dns_recordset" "public" {
   name     = each.value["name"]
   type     = each.value["type"]
   ttl      = lookup(each.value, "ttl", 300)
-  data     = var.static_external_ip ? [yandex_vpc_address.this.address] : [yandex_compute_instance.this.network_interface[0].nat_ip_address]
+  data     = var.create_static_external_ip ? [ yandex_vpc_address.this[0].external_ipv4_address[0].address] : [yandex_compute_instance.this.network_interface[0].nat_ip_address]
 }
 
 resource "yandex_dns_recordset" "private" {
